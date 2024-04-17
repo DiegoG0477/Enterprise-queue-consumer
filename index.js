@@ -3,21 +3,27 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-async function sendData(msg) {
+const sendData = async (msg) => {
     try {
         const USERS_API_URL = String(process.env.USERS_API_URL);
         const parsedData = JSON.parse(msg.content.toString());
 
         const { event, data } = parsedData;
 
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        };
+
+        let response, responseBody;
+
         if (event === "enterprise.users.post-register") {
-            const response = await fetch(`${USERS_API_URL}/users`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
+            response = await fetch(`${USERS_API_URL}/users`, requestOptions);
+            responseBody = await response.json();
+            console.log(responseBody);
 
             if (response.ok) {
                 console.log("Usuario creado correctamente");
@@ -25,16 +31,9 @@ async function sendData(msg) {
                 console.error("Error al crear el usuario:", response);
             }
 
-        } else if (event === "enterprise.auth.login"){
-            const response = await fetch(`${USERS_API_URL}/users/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            const responseBody = await response.json();
+        } else if (event === "enterprise.auth.login") {
+            response = await fetch(`${USERS_API_URL}/users/login`, requestOptions);
+            responseBody = await response.json();
             const token = responseBody.token;
 
             console.log("Token:", token);
@@ -48,20 +47,9 @@ async function sendData(msg) {
                 console.error("Error al loguear el usuario:", response);
             }
 
-        } else if (event === "enterprise.stations.allow-access"){
-            const response = await fetch(`${USERS_API_URL}/acces`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            console.log("data", data);
-
-            console.log(response);
-
-            const responseBody = await response.json();
+        } else if (event === "enterprise.stations.allow-access") {
+            response = await fetch(`${USERS_API_URL}/acces`, requestOptions);
+            responseBody = await response.json();
 
             console.log(responseBody);
 
@@ -70,15 +58,14 @@ async function sendData(msg) {
             } else {
                 console.error("Error al permitir el acceso:", response);
             }
-        } else if (event === "enterprise.get-stations-by-user"){
-            const response = await fetch(`${USERS_API_URL}/acces/stationsByUSer/${data.user_id}`, {
+        } else if (event === "enterprise.get-stations-by-user") {
+            response = await fetch(`${USERS_API_URL}/acces/stationsByUSer/${data.user_id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-
-            const responseBody = await response.json();
+            responseBody = await response.json();
 
             console.log(responseBody);
 
@@ -93,7 +80,7 @@ async function sendData(msg) {
     }
 }
 
-async function connectAndConsume() {
+const connectAndConsume = async () => {
     try {
         const USERNAME = process.env.AMQP_USERNAME;
         const PASSWORD = encodeURIComponent(process.env.AMQP_PASSWORD);
