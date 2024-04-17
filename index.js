@@ -74,6 +74,22 @@ const sendData = async (msg) => {
             } else {
                 console.error("Error al obtener las estaciones:", response);
             }
+        } else if (event === "enterprise.get-stations-all"){
+            response = await fetch(`${USERS_API_URL}/stations`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            responseBody = await response.json();
+
+            console.log(responseBody);
+
+            if (response.ok) {
+                console.log("Estaciones obtenidas correctamente");
+            } else {
+                console.error("Error al obtener las estaciones:", response);
+            }
         }
     } catch (error) {
         console.error("Error al procesar el mensaje:", error);
